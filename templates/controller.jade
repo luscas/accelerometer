@@ -1,0 +1,31 @@
+extends ./layout/app.jade
+
+block scripts
+	script(src="/socket.io/socket.io.js")
+	script.
+		var socket = io.connect('http://#{host}:#{port}/#{id}');
+
+		var initial = true;
+		var movement = [];
+
+
+		window.addEventListener('deviceorientation', (event) => {
+			movement.push([
+				Math.round(event.gamma),
+				Math.round(event.beta)
+			]);
+
+			if (initial) {
+				socket.emit('movement', movement);
+			}
+
+			if (movement.length > 100) {
+				socket.emit('movement', movement);
+				initial = false;
+			}
+
+			if (movement.length > 500) {
+				movement = [];
+				initial  = true;
+			}
+		});
